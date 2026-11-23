@@ -1,6 +1,6 @@
 /* Offline-Speicher nur für die Hülle (Anmeldung, Aussehen, Schrift).
    Inhalte aus Supabase werden hier bewusst NICHT gespeichert. */
-const VERSION = "huelle-v2";
+const VERSION = "huelle-v3";
 const DATEIEN = [
   "./",
   "./index.html",

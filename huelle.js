@@ -10,7 +10,7 @@
   var WARTE_KEY = "gbwm-telegram-anmeldung";
   var ANMELDE_DAUER = 15 * 60 * 1000; // so lange gilt ein Anmeldevorgang
   var LINK_DAUER = 7 * 24 * 60 * 60; // signierte Links gelten 7 Tage, damit das Handy Bilder zwischenspeichern kann
-  var TITEL = "Gemeinsam bewegen wir mehr";
+  var TITEL = "Gemeinsam mehr bewegen";
   var pruefTimer = null;
 
   function esc(s) {
