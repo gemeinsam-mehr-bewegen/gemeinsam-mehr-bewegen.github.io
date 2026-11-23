@@ -95,17 +95,31 @@
     abholen();
   }
 
+  var abholenLaeuft = false;
   function abholen() {
     clearTimeout(pruefTimer);
+    // Schon angemeldet (z. B. in einem anderen Tab fertig geworden): Vorgang still beenden
+    if (S.nutzer()) { schreiben(WARTE_KEY, null); return start(); }
+    var gespeichert = lesen(WARTE_KEY);
     var v = laufenderVorgang();
     if (!v) {
       schreiben(WARTE_KEY, null);
-      return zeigeAnmeldung("Die Anmeldung hat zu lange gedauert. Bitte tippe noch einmal auf „Mit Telegram anmelden“.");
+      // Meldung nur, wenn wirklich ein angefangener Vorgang abgelaufen ist
+      return zeigeAnmeldung(gespeichert && gespeichert.schluessel
+        ? "Die Anmeldung hat zu lange gedauert. Bitte tippe noch einmal auf „Mit Telegram anmelden“."
+        : "");
     }
+    if (abholenLaeuft) { return; } // nie zwei Abfragen gleichzeitig
+    abholenLaeuft = true;
     S.telegramAbholen(v.schluessel).then(function (fertig) {
-      if (fertig) { schreiben(WARTE_KEY, null); return start(); }
+      abholenLaeuft = false;
+      if (fertig || S.nutzer()) { schreiben(WARTE_KEY, null); return start(); }
+      var jetzt = lesen(WARTE_KEY);
+      if (!jetzt || jetzt.schluessel !== v.schluessel) { return; } // abgebrochen oder neu begonnen
       pruefTimer = setTimeout(abholen, 2500);
     }).catch(function () {
+      abholenLaeuft = false;
+      if (S.nutzer()) { return; }
       var m = document.getElementById("meldung");
       if (m) { m.textContent = "Gerade keine Verbindung. Es geht von selbst weiter, sobald du wieder Internet hast."; }
       pruefTimer = setTimeout(abholen, 5000);
@@ -114,7 +128,7 @@
 
   // Zurück aus Telegram: sofort nachschauen statt auf den nächsten Takt zu warten
   document.addEventListener("visibilitychange", function () {
-    if (document.visibilityState === "visible" && !S.nutzer() && laufenderVorgang() && document.getElementById("tg-auf")) { abholen(); }
+    if (document.visibilityState === "visible" && !S.nutzer() && !abholenLaeuft && laufenderVorgang() && document.getElementById("tg-auf")) { abholen(); }
   });
 
   /* ---------- Warten, abgelehnt, gesperrt ---------- */
